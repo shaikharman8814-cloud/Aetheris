@@ -1,0 +1,24 @@
+data: {"content":"```"} 
+
+data: {"content":"html\n<!DOCTYPE html>\n<html>\n<head>\n<title>"} 
+
+data: {"content":"My First Webpage</title>\n</head>\n<body>\n<h1>Hello,"} 
+
+data: {"content":" World!</h1>\n<p>This is my first webpage created with HTML.</p>\n</body>\n</html>\n```\n\n### Quick Explanation\n\nThis is a"} 
+
+data: {"content":" basic <def>HTML</def> webpage. It uses different <key>tags</key> to structure the content. The `<!DOCTYPE html>` tells"} 
+
+data: {"content":" the browser this is HTML5. The `<html>` tag is the root of the page. The `<head>` section has the page title. The `<body>` contains the visible content. The `<h1>` tag creates a big heading. The `<"} 
+
+data: {"content":"p>` tag creates a paragraph.\n\n### How It Works (Step-by-step)\n\nFirst, the browser reads the code. Then, it sees the `<!DOCTYPE html>` declaration. It knows this is HTML5. Second"} 
+
+data: {"content":", it reads the `<html>` tag. It knows everything is inside this. Third, it reads the `<head>` section. It gets the page title. Finally, it reads the `<body>` section. It displays the heading and paragraph.\n\n### If You Want To Improve It\n\n1.  Add more <key>content"} 
+
+data: {"content":"</key> inside the `<body>` to show your information.\n2.  Use <key>CSS</key> to style the page. Change colors, fonts, and layout.\n3.  Include images with the `<img>` tag to make it visually appealing.\n4.  Add <key>links</"} 
+
+data: {"content":"key> using the `<a>` tag to other pages or websites.\n\n### Visual Prompt\n• A simple, clean webpage layout with a large, centered \"Hello, World!\" heading and a brief paragraph below it. The background is a light color, and the text is dark, making it easy to read.\n\n→"} 
+
+data: {"content":" How do I add an image to my webpage?\n→ What is CSS and how do I use it?\n→ Can you show me how to create a basic webpage with a navigation bar?\n"} 
+
+data: [DONE]
+

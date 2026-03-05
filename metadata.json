@@ -1,0 +1,7 @@
+{
+  "name": "Aetheris",
+  "description": "A high-speed, reliable AI search assistant that provides direct answers with verified sources using real-time web grounding.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
