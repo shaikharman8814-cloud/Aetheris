@@ -41,6 +41,14 @@ export interface Message {
   generatedImage?: string;
 }
 
+export interface Conversation {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: number;
+  pinned?: boolean;
+}
+
 export enum AppStatus {
   IDLE = 'IDLE',
   SEARCHING = 'SEARCHING',

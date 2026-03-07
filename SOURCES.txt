@@ -1,3 +1,0 @@
-=== PROTOCOL INITIALIZED ===
-https://www.google.com
-=== VISUAL PROTOCOL INITIALIZED ===

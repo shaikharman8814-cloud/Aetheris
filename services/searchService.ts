@@ -1,6 +1,6 @@
 
 import OpenAI from "openai";
-import { Message, Source, AppMode, Attachment } from "../types";
+import { Message, Source, AppMode, Attachment } from "../types.ts";
 
 export const getSystemInstruction = (mode: AppMode) => {
   const base = `You are Aetheris, your AI assistant.
@@ -389,7 +389,7 @@ export const performSearchStream = async (
       throw error;
     }
     // Custom error fallback for when both APIs fail or the server crashes
-    onChunk(`━━━━━━━━━━━━━━━━━━\n⚙️ Aetheris System Notice\n⚙️ Aetheris is temporarily stabilizing due to high demand.\n\nPlease try again in a few moments.`);
+    onChunk(`⚠️ The AI service temporarily failed to respond. Please try again.`);
     return { sources: [], provider: "OpenAI" };
   }
 };

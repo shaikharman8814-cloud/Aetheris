@@ -195,13 +195,18 @@ const SearchInput: React.FC<SearchInputProps> = ({ onSearch, onModeChange, isLoa
               multiple
               accept="image/*,application/pdf,text/*,.c,.cpp,.java,.py,.js,.ts,.tsx,.html,.css,.json"
             />
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="p-1.5 text-[#888888] hover:text-white transition-colors"
-              title="Attach File"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13" /></svg>
-            </button>
+            <div className="relative group/attach">
+              <button
+                onClick={(e) => e.preventDefault()}
+                className="p-1.5 text-[#444] cursor-not-allowed transition-colors"
+                disabled
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.414a6 6 0 108.486 8.486L20.5 13" /></svg>
+              </button>
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 bg-[#1F2228] border border-[#2F3238] text-[10px] font-bold text-white rounded-lg opacity-0 group-hover/attach:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none shadow-2xl backdrop-blur-sm">
+                Coming Soon
+              </div>
+            </div>
             <button
               onClick={(e) => { e.preventDefault(); handleSpeech(); }}
               className={`p-1.5 transition-colors ${isListening ? 'text-white animate-pulse' : 'text-[#888888] hover:text-white'}`}

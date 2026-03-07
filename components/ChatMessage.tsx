@@ -71,6 +71,7 @@ interface ChatMessageProps {
   onRelatedClick?: (query: string) => void;
   onGenerateImage?: (prompt: string, type?: 'diagram' | 'timeline' | 'comparison', topic?: string) => void;
   onRegenerate?: () => void;
+  onShare?: () => Promise<string>;
 }
 
 const TrustMetric = ({ label, value, color }: { label: string; value: number; color: string }) => (
@@ -116,15 +117,83 @@ const TrustNode: React.FC<{ source: Source }> = ({ source }) => {
   );
 };
 
-const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEdit, onRelatedClick, onGenerateImage, onRegenerate }) => {
+const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEdit, onRelatedClick, onGenerateImage, onRegenerate, onShare }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(message.content);
   const [copied, setCopied] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(message.content);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const copyToClipboardFallback = async (text: string) => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (err) {
+        console.warn("Clipboard API failed, trying fallback...", err);
+      }
+    }
+    try {
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return successful;
+    } catch (err) {
+      console.error("Fallback clipboard copy failed:", err);
+      return false;
+    }
+  };
+
+  const handleShareButton = async () => {
+    if (!onShare || isSharing) return;
+    setIsSharing(true);
+    try {
+      const contentToCopy = await onShare();
+      if (contentToCopy) {
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: "Aetheris Chat",
+              text: contentToCopy,
+              url: window.location.href,
+            });
+          } catch (err: any) {
+            if (err.name !== 'AbortError') {
+              const success = await copyToClipboardFallback(contentToCopy);
+              if (success) {
+                setShareCopied(true);
+                setTimeout(() => setShareCopied(false), 2500);
+              }
+            }
+          }
+        } else {
+          const success = await copyToClipboardFallback(contentToCopy);
+          if (success) {
+            setShareCopied(true);
+            setTimeout(() => setShareCopied(false), 2500);
+          }
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    const success = await copyToClipboardFallback(message.content);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const isUser = message.role === 'user';
@@ -193,14 +262,14 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEdit, onRelatedCli
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-4 w-full justify-end">
+                <div className="flex items-center gap-4 w-full justify-end flex-nowrap">
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="opacity-0 group-hover:opacity-100 p-2 text-gray-600 hover:text-white transition-all order-1"
+                    className="shrink-0 opacity-0 group-hover:opacity-100 p-2 text-gray-600 hover:text-white transition-all order-1"
                   >
                     <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                   </button>
-                  <div className="bg-[#1A1A22] text-[#e0e0e0] px-5 py-3 rounded-[16px] text-[15px] border border-[#22222A] order-2 font-medium max-w-full shadow-sm relative">
+                  <div className="bg-[#1A1A22] text-[#e0e0e0] px-5 py-3 rounded-[16px] text-[15px] border border-[#22222A] order-2 font-medium max-w-full shadow-sm relative break-words">
                     {message.attachments && message.attachments.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-2">
                         {message.attachments.map((att, idx) => (
@@ -218,9 +287,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEdit, onRelatedCli
                       </div>
                     )}
                     {message.content}
-                  </div>
-                  <div className="w-[36px] h-[36px] rounded-full bg-[#1A1A22] border border-[#22222A] flex items-center justify-center overflow-hidden flex-shrink-0 order-3">
-                    <img src="https://ui-avatars.com/api/?name=Snyder&background=111&color=fff&size=64" alt="User" className="w-full h-full object-cover grayscale opacity-80" />
                   </div>
                 </div>
               )}
@@ -420,7 +486,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEdit, onRelatedCli
             )}
           </div>
 
-          <div className="p-5 space-y-6">
+          <div className="p-5 space-y-6 break-words">
             {/* 1. Investigation Steps Strip */}
             {message.reasoningSteps && message.reasoningSteps.length > 0 && (
               <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-1000">
@@ -464,7 +530,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEdit, onRelatedCli
                     <div className="flex items-center gap-1.5"><div className="w-1.5 h-1.5 rounded-full bg-gray-400" /><span className="text-[8px] font-bold text-gray-500 uppercase">Freshness</span></div>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-4 gap-3">
                   {message.sources.slice(0, 4).map((s, idx) => <TrustNode key={idx} source={s} />)}
                 </div>
               </div>
@@ -645,7 +711,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEdit, onRelatedCli
               </div>
             )}
 
-            <div className="pt-4 flex justify-end gap-2 mb-2">
+            <div className="pt-4 flex flex-wrap justify-end gap-2 mb-2">
               {onRegenerate && !message.isUpdating && (
                 <button
                   onClick={onRegenerate}
@@ -655,6 +721,29 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message, onEdit, onRelatedCli
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
                   <span className="text-[10px] font-bold text-gray-500 group-hover:text-gray-300 uppercase tracking-widest">Regenerate</span>
+                </button>
+              )}
+              {onShare && !message.isUpdating && (
+                <button
+                  onClick={handleShareButton}
+                  disabled={isSharing}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#050505] border border-[#1A1A22] hover:border-[#22222A] transition-all group shadow-sm disabled:opacity-50"
+                >
+                  {shareCopied ? (
+                    <>
+                      <svg className="w-3 h-3 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Chat copied. You can paste it anywhere.</span>
+                    </>
+                  ) : (
+                    <>
+                      {isSharing ? (
+                        <div className="w-3 h-3 border-2 border-gray-500 border-t-white rounded-full animate-spin"></div>
+                      ) : (
+                        <svg className="w-3 h-3 text-gray-500 group-hover:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+                      )}
+                      <span className="text-[10px] font-bold text-gray-500 group-hover:text-gray-300 uppercase tracking-widest">{isSharing ? 'Copying...' : 'Share Chat'}</span>
+                    </>
+                  )}
                 </button>
               )}
               <button

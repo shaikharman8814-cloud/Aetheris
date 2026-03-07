@@ -23,7 +23,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
   return (
     <div className="w-full max-w-3xl mx-auto py-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <h1 className="text-3xl font-semibold mb-6 text-gray-900">{result.query}</h1>
-      
+
       <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm mb-8">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
@@ -31,7 +31,7 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
           </div>
           <span className="text-xs font-bold tracking-widest text-blue-600 uppercase">AI Answer</span>
         </div>
-        
+
         <div className="prose prose-blue max-w-none">
           {formattedAnswer}
         </div>
@@ -40,9 +40,9 @@ const ResultDisplay: React.FC<ResultDisplayProps> = ({ result }) => {
       {result.sources.length > 0 && (
         <div className="px-2">
           <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Verified Sources</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 min-[1200px]:grid-cols-4 gap-3">
             {result.sources.map((source, idx) => (
-              <a 
+              <a
                 key={idx}
                 href={source.url}
                 target="_blank"
