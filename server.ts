@@ -625,6 +625,11 @@ async function startServer() {
     res.sendFile(path.resolve("dist/index.html"));
   });
 
+  app.use(express.static("dist"));
+  app.get("*", (req, res) => {
+    res.sendFile(path.resolve("dist/index.html"));
+  });
+
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error("[Aetheris Error]", err);
 
