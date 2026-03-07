@@ -65,7 +65,7 @@ async function extractDocumentText(att: any): Promise<string> {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   app.use(helmet({
     contentSecurityPolicy: {
@@ -621,14 +621,10 @@ async function startServer() {
     app.use(express.static("dist"));
   }
 
-  app.get("/*splat", (req, res) => {
+  app.get("/(.*)", (req, res) => {
     res.sendFile(path.resolve("dist/index.html"));
   });
 
-  app.use(express.static("dist"));
-  app.get("*", (req, res) => {
-    res.sendFile(path.resolve("dist/index.html"));
-  });
 
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error("[Aetheris Error]", err);
