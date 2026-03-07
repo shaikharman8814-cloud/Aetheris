@@ -94,7 +94,7 @@ async function startServer() {
 
   const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',')
-    : ['http://localhost:3000', 'http://127.0.0.1:3000'];
+    : ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://aetheris-mc8c.onrender.com'];
 
   app.use(cors({
     origin: (origin: any, callback: any) => {
