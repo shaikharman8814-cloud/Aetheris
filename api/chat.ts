@@ -1,17 +1,10 @@
-export const config = {
-    runtime: 'edge',
-};
-
-export default async function handler(req: Request) {
+export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') {
-        return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-            status: 405,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        const { query, history, mode, modelName } = await req.json();
+        const { query, history, mode, modelName } = req.body || {};
 
         // Reconstruct the message array for Groq
         const messages = [];
@@ -37,10 +30,7 @@ export default async function handler(req: Request) {
         const groqKey = process.env.GROQ_API_KEY;
 
         if (!groqKey) {
-            return new Response(JSON.stringify({ error: 'No API key configured on server' }), {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return res.status(500).json({ error: 'No API key configured on server' });
         }
 
         // Call Groq API
@@ -61,26 +51,17 @@ export default async function handler(req: Request) {
 
         if (!groqResponse.ok) {
             const errorData = await groqResponse.json();
-            return new Response(JSON.stringify({ error: errorData }), {
-                status: groqResponse.status,
-                headers: { 'Content-Type': 'application/json' },
-            });
+            return res.status(groqResponse.status).json({ error: errorData });
         }
 
         const data = await groqResponse.json();
         const content = data.choices[0]?.message?.content || '';
 
         // Return the response as JSON to the frontend
-        return new Response(JSON.stringify({ content, isInstant: true }), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return res.status(200).json({ content, isInstant: true });
 
     } catch (error: any) {
         console.error('API Error:', error);
-        return new Response(JSON.stringify({ error: 'Internal server error' }), {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        return res.status(500).json({ error: 'Internal server error' });
     }
 }
