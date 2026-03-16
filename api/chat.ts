@@ -1,67 +1,90 @@
 export default async function handler(req: any, res: any) {
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: 'Method not allowed' });
+
+    if (req.method !== "POST") {
+        return res.status(405).json({ error: "Method not allowed" });
     }
 
     try {
         const { query, history, mode, modelName } = req.body || {};
 
-        // Reconstruct the message array for Groq
-        const messages = [];
-
-        // System instruction can be simplified or omitted for the minimal working code, 
-        // but we add a basic one if needed
-        messages.push({
-            role: 'system',
-            content: 'You are Aetheris, a helpful AI assistant.',
-        });
-
-        if (history && Array.isArray(history)) {
-            history.forEach((msg: any) => {
-                messages.push({
-                    role: msg.role === 'assistant' ? 'assistant' : 'user',
-                    content: msg.content,
-                });
-            });
+        if (!query) {
+            return res.status(400).json({ error: "Query is required" });
         }
-
-        messages.push({ role: 'user', content: query });
 
         const groqKey = process.env.GROQ_API_KEY;
 
         if (!groqKey) {
-            return res.status(500).json({ error: 'No API key configured on server' });
+            console.error("Missing GROQ_API_KEY");
+            return res.status(500).json({ error: "Server API key missing" });
         }
 
-        // Call Groq API
-        const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${groqKey}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                model: modelName || 'llama-3.1-8b-instant',
-                messages: messages,
-                temperature: 0.7,
-                max_tokens: 800,
-                stream: false, // We return JSON as requested
-            }),
+        const messages: any[] = [];
+
+        messages.push({
+            role: "system",
+            content: "You are Aetheris, a helpful AI assistant."
         });
 
-        if (!groqResponse.ok) {
-            const errorData = await groqResponse.json();
-            return res.status(groqResponse.status).json({ error: errorData });
+        if (Array.isArray(history)) {
+            history.forEach((msg: any) => {
+                messages.push({
+                    role: msg.role === "assistant" ? "assistant" : "user",
+                    content: msg.content
+                });
+            });
         }
 
-        const data = await groqResponse.json();
-        const content = data.choices[0]?.message?.content || '';
+        messages.push({
+            role: "user",
+            content: query
+        });
 
-        // Return the response as JSON to the frontend
-        return res.status(200).json({ content, isInstant: true });
+        let activeModel = "llama-3.1-8b-instant";
+        if (modelName === "aetheris-v4") {
+            activeModel = "llama-3.3-70b-versatile";
+        } else if (modelName === "aetheris-v2" || modelName === "aetheris-v3") {
+            activeModel = "llama-3.1-8b-instant";
+        } else if (modelName) {
+            activeModel = modelName;
+        }
 
-    } catch (error: any) {
-        console.error('API Error:', error);
-        return res.status(500).json({ error: 'Internal server error' });
+        const response = await fetch(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${groqKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: activeModel,
+                    messages,
+                    temperature: 0.7,
+                    max_tokens: 800
+                })
+            }
+        );
+
+        if (!response.ok) {
+            const text = await response.text();
+            console.error("Groq error:", text);
+            return res.status(response.status).json({ error: text });
+        }
+
+        const data = await response.json();
+
+        const content = data?.choices?.[0]?.message?.content || "";
+
+        return res.status(200).json({
+            content,
+            isInstant: true
+        });
+
+    } catch (error) {
+        console.error("API Error:", error);
+
+        return res.status(500).json({
+            error: "AI service failed"
+        });
     }
 }
