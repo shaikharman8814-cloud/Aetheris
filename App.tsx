@@ -163,7 +163,7 @@ const App: React.FC = () => {
         } : m
       ));
     } catch (err: any) {
-      console.error("Silent Image Generation Error:", err);
+      console.error("Silent Image Generation  Error:", err);
     }
   }, []);
 
@@ -187,7 +187,7 @@ const App: React.FC = () => {
     setStatus(AppStatus.SEARCHING);
     setError(null);
 
-    // Abort any ongoing request before starting a new one
+    // Abort any ongoing request before starting a new one ok
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
