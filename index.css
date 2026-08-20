@@ -82,11 +82,11 @@
   }
 }
 
-.animate-pulse-soft {
+.animate-pulse-soft{
   animation: pulse-soft 3s ease-in-out infinite;
 }
 
-@keyframes gradient-x {
+@keyframes gradient-x{
 
   0%,
   100% {
